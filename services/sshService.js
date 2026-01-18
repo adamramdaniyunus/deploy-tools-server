@@ -24,6 +24,7 @@ class SSHService {
         host: this.config.host,
         username: this.config.username,
         password: this.config.password,
+        privateKey: this.config.privateKey,
         port: this.config.port || 22,
       });
       
