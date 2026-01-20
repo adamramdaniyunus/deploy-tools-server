@@ -1,9 +1,12 @@
 const crypto = require('crypto');
+const dotenv = require('dotenv');
+dotenv.config();
 
-const key = 'your-secret-key';
+const key = process.env.ENCRYPTION_KEY || 'secret-key-1234567890';
 class Encrypt {
     constructor() {
-        this.key = key;
+        // Ensure key is 32 bytes for aes-256-cbc by hashing it
+        this.key = crypto.createHash('sha256').update(key).digest();
     }
 
     encrypt(text) {

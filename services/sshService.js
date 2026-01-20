@@ -20,13 +20,26 @@ class SSHService {
     this.log(`Connecting to ${this.config.host}...`);
     
     try {
-      await this.ssh.connect({
+      const connectConfig = {
         host: this.config.host,
         username: this.config.username,
-        password: this.config.password,
-        privateKey: this.config.privateKey,
         port: this.config.port || 22,
-      });
+      };
+
+      if (this.config.password) {
+        connectConfig.password = this.config.password;
+      }
+
+      if (this.config.privateKey && this.config.privateKey.trim() !== '') {
+        let key = this.config.privateKey.trim();
+        // Auto-fix: If key is missing headers but looks like an OpenSSH key (starts with 'openssh-key-v1' in base64)
+        if (!key.startsWith('-----BEGIN') && key.startsWith('b3BlbnNzaC1rZXktdjE')) {
+            key = `-----BEGIN OPENSSH PRIVATE KEY-----\n${key}\n-----END OPENSSH PRIVATE KEY-----`;
+        }
+        connectConfig.privateKey = key;
+      }
+
+      await this.ssh.connect(connectConfig);
       
       this.connected = true;
       this.log('Connected to server');
