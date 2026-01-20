@@ -7,98 +7,80 @@ const Project = sequelize.define('Project', {
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true
   },
+  organizationId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: 'organizations',
+      key: 'id'
+    }
+  },
   name: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  type: {
-    type: DataTypes.STRING,
-    allowNull: false, // nodejs, php, static, laravel-react
-    defaultValue: 'nodejs'
-  },
-  // Server Credentials
-  host: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  username: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false
-    // In a real production app, this should be encrypted. 
-    // For a local tool, we'll keep it simple but treat it carefully.
-  },
-  port: {
-    type: DataTypes.INTEGER,
-    defaultValue: 22
-  },
-  deployPath: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  // Git Configuration
-  repoUrl: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: false
   },
   branch: {
-    type: DataTypes.STRING,
-    defaultValue: 'main'
+    type: DataTypes.STRING(32),
+    allowNull: false,
+    defaultValue: "main"
   },
-  gitToken: {
-    type: DataTypes.STRING,
-    allowNull: true // Optional (if using SSH or public repo)
+  toolId: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: {
+      model: 'list_tools_project',
+      key: 'id'
+    }
   },
-  authMethod: {
-    type: DataTypes.STRING,
-    defaultValue: 'pat' // pat, ssh, none
-  },
-  // Build & Run Config
-  buildCmd: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  frontendBuildCmd: {
-    type: DataTypes.STRING, 
-    defaultValue: 'npm run build'
-  },
-  startCmd: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  // Advanced Laravel Options
-  composerInstall: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-  },
-  laravelOptimize: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-  },
-  runMigrations: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false
+  credentialsId: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: {
+      model: 'credentials_projects',
+      key: 'id'
+    }
   },
   appPort: {
     type: DataTypes.INTEGER,
     defaultValue: 3000
   },
   domain: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true
   },
-  // Status tracking
   lastDeployedAt: {
     type: DataTypes.DATE,
     allowNull: true
   },
   lastDeploymentStatus: {
-    type: DataTypes.STRING, // success, failed
-    allowNull: true
+    type: DataTypes.STRING(50),
+    allowNull: true,
+    validate: {
+      isIn: [['success', 'failed', 'pending', 'running']]
+    }
+  },
+  createdBy: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
+  },
+  updatedBy: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
   }
+}, {
+  tableName: 'projects',
+  underscored: true,
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at'
 });
 
 module.exports = Project;
