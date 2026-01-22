@@ -34,4 +34,12 @@ const LogsDeploy = sequelize.define('LogsDeploy', {
   updatedAt: 'updated_at'
 });
 
+// Static method to get history by project ID
+LogsDeploy.getHistoryByProject = async function(projectId) {
+  return await this.findAll({
+    where: { projectId },
+    order: [['created_at', 'DESC']]
+  });
+};
+
 module.exports = LogsDeploy;

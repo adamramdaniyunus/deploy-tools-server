@@ -1,6 +1,7 @@
 const SSHService = require('./sshService');
-const { Project } = require('../models');
+const { Project, LogsDeploy } = require('../models');
 const createSocketLogger = require('../utils/socketLogger');
+const logger = require('../utils/logger');
 
 /**
  * Function for deploy project
@@ -15,6 +16,18 @@ async function deployProject(project, io) {
 
   // Use reusable socket logger
   const log = createSocketLogger(io, logChannel, jobId);
+
+  // Create initial log record
+  let deployLog;
+  try {
+    deployLog = await LogsDeploy.create({
+      projectId: project.id,
+      status: 'running',
+      message: 'Deployment started'
+    });
+  } catch (err) {
+    logger(jobId, 'Failed to create deployment log:', err);
+  }
 
  try {
   log(`Starting deployment for ${project.name}...`);
@@ -165,6 +178,14 @@ async function deployProject(project, io) {
     lastDeployedAt: new Date()
   });
 
+  // Update History Log to Success
+  if (deployLog) {
+    await deployLog.update({
+      status: 'success',
+      message: 'Deployment completed successfully'
+    });
+  }
+
   return { status: 'success', lastDeployedAt: new Date() };
  } catch (error) {
   console.log(error);
@@ -186,6 +207,14 @@ async function deployProject(project, io) {
   if (projectInstance) {
     await projectInstance.update({
       lastDeploymentStatus: 'failed'
+    });
+  }
+
+  // Update History Log to Failed
+  if (deployLog) {
+    await deployLog.update({
+      status: 'failed',
+      message: `Deployment failed: ${error.message}`
     });
   }
 

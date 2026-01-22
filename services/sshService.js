@@ -62,7 +62,10 @@ class SSHService {
     
     this.log(`> ${command}`);
     
-    const result = await this.ssh.execCommand(command, {
+    // Set TERM environment variable to avoid "TERM environment variable not set" errors
+    const cmdWithEnv = `export TERM=xterm; ${command}`;
+    
+    const result = await this.ssh.execCommand(cmdWithEnv, {
       cwd: options.cwd || this.config.deployPath,
       ...options
     });
